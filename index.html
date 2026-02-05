@@ -1,0 +1,713 @@
+<!-- Beatles AstroClock Master Copy 1 -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celestial Horologium | Day Mode</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            overflow-y: auto;
+            color: #333;
+        }
+
+        /* Stars Background */
+        .star {
+            position: absolute;
+            background: #94a3b8;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0.3;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 2rem;
+            text-align: center;
+            z-index: 1;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .title {
+            font-size: 2rem;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+        }
+
+        .subtitle {
+            color: #555;
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .location {
+            color: #666;
+            font-size: 0.7rem;
+            margin-top: 0.5rem;
+            opacity: 0.9;
+            font-weight: 600;
+        }
+
+        /* ROW LAYOUT */
+        .grid-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1000px;
+            gap: 2rem;
+            z-index: 1;
+            padding-bottom: 3rem;
+        }
+
+        .planet-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            width: 100%;
+        }
+
+        /* Ascendant Row Special Case (5 columns for Document 3) */
+        .asc-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+
+            .planet-row,
+            .asc-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* CARD STYLING */
+        /* All cards look consistent (Square/Rect style) */
+        /* Card Styling */
+        .flip-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            /* Make cards taller to show full decan images */
+            aspect-ratio: 4 / 5;
+            width: 100%;
+            animation: fadeIn 0.8s ease-out backwards;
+            transition: transform 0.2s;
+            color: #333;
+        }
+
+        /* Style for when an image is present */
+        .flip-card.has-bg {
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+        }
+
+        /* White Card Style for Degree */
+        .flip-card.degree-card {
+            background: #ffffff !important;
+            color: #333 !important;
+            border: 1px solid #cbd5e1;
+        }
+
+        /* Decan Card with Image Background */
+        .flip-card.decan-card {
+            color: #333 !important;
+            border: 1px solid #cbd5e1;
+        }
+
+        /* Ensure specific elements in has-bg cards are readable */
+        .has-bg .asc-title,
+        .has-bg .asc-value,
+        .has-bg .asc-sub,
+        .has-bg .asc-icon {
+            color: white !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+        }
+
+        .flip-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .asc-title {
+            font-size: 11px;
+            color: #4a5568;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            font-weight: 800;
+            line-height: 1.2;
+            text-align: center;
+        }
+
+        /* Override title color for white cards */
+        .degree-card .asc-title {
+            color: #4f46e5;
+        }
+
+        .asc-icon {
+            font-size: 3.5rem;
+            color: #fbbf24;
+            line-height: 1;
+            margin: 0.5rem 0;
+            text-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+        }
+
+        /* Override icon color for white cards */
+        .degree-card .asc-icon {
+            color: #fbbf24;
+            text-shadow: none;
+        }
+
+        .asc-value {
+            font-size: 3rem;
+            color: #ffffff;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            line-height: 1;
+        }
+
+        /* Override value color for white cards */
+        .degree-card .asc-value {
+            color: #1a202c !important;
+        }
+
+        .asc-sub {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: auto;
+            font-weight: 600;
+        }
+
+        .degree-card .asc-sub {
+            color: #64748b;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .footer {
+            text-align: center;
+            color: #4a5568;
+            font-size: 0.75rem;
+            opacity: 0.8;
+            z-index: 1;
+            font-weight: 500;
+            margin-bottom: 2rem;
+        }
+
+        /* FLIP CLOCK FACADE */
+        .degree-card .flip-clock-display {
+            background: #202020;
+            color: #ffffff !important;
+            border-radius: 12px;
+            padding: 0;
+            position: absolute;
+            top: 25%;
+            bottom: 10%;
+            left: 5%;
+            right: 5%;
+            width: auto;
+            height: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4), inset 0 2px 5px rgba(255, 255, 255, 0.1);
+            font-family: 'Arial', sans-serif;
+            z-index: 2;
+            font-size: 7rem;
+            letter-spacing: -2px;
+            line-height: 1;
+            font-weight: 700;
+        }
+
+        /* The Split Line */
+        .flip-clock-display::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #000;
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15);
+            z-index: 3;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="stars"></div>
+
+    <div class="header">
+        <h1 class="title">CELESTIAL HOROLOGIUM</h1>
+        <p class="subtitle">Real-Time Ephemeris</p>
+        <p class="location">Constanza, RD (18.9N, 69.75W)</p>
+    </div>
+
+    <!-- The Main Container -->
+    <div class="grid-container" id="mainContainer"></div>
+
+    <div class="footer" id="footer">Loading Engine...</div>
+
+    <script>
+        /**
+         * REFERENCE DOCUMENT 3 - Complete Working State with 5 Moments & Documentation
+         * Optimized Script Structure - DATE: 2026-02-04
+         */
+
+        // ============================================================================
+        // SECTION 1: LOOK & FEEL (Fonts, Colors, Dimensions, Sign Placement)
+        // ============================================================================
+        /* 
+        ============================================================================
+        DESIGN SPECIFICATIONS: VISUAL COMPOSITION & DIMENSIONS
+        ============================================================================
+        1. CARD GEOMETRY & SPACING:
+           - Aspect Ratio: 4:5 (Standardized for all cards to ensure uniform grid alignment).
+           - Corner Radius: 12px (Smooth rounding for a premium 'app' feel).
+           - Card Padding: 1.5rem (24px internal safety zone for all elements).
+           - Outer Gaps: 2rem (32px) between horizontal rows, 1.5rem (24px) between cards.
+
+        2. TYPOGRAPHY HIERARCHY:
+           - Global Monospace: 'Courier New', monospace (For data values and precision).
+           - Flip-Clock Font: 'Arial', sans-serif (7rem, Bold, -2px tracking for weight).
+           - Labels/Titles: 11px, uppercase, 0.12em letter-spacing (Bold 800).
+
+        3. COMPOSITION (Rule of Thirds):
+           - Header Zone (Top 18%): Ascendant cards feature tactical badges (framed yellow borders) within the white header band.
+           - Planet Cards: Maintain floating badge architecture for albums; no dedicated header bands for character/degree cards.
+           - Center/Main Zone (Middle 67%): Large digits or Asset/Poster backgrounds.
+           - Footer Zone (Bottom 15%): Glassmorphism Layer with Energy/Progress bars.
+
+        4. "BLACK SPACES" & CONTRAST:
+           - Positive/White Space: Used in Degree cards to emphasize "Data".
+           - Focused Black Spaces: Backgrounds for Asset cards create a "Stage" effect.
+           - Contrast Accent: Yellow (#FFD700) and Indigo (#4f46e5) eye-tracking paths.
+        ============================================================================
+        */
+        const SIGN_DATES = {
+            'Aries': 'Mar 21 - Apr 19', 'Taurus': 'Apr 20 - May 20', 'Gemini': 'May 21 - Jun 20',
+            'Cancer': 'Jun 21 - Jul 22', 'Leo': 'Jul 23 - Aug 22', 'Virgo': 'Aug 23 - Sep 22',
+            'Libra': 'Sep 23 - Oct 22', 'Scorpio': 'Oct 23 - Nov 21', 'Sagittarius': 'Nov 22 - Dec 21',
+            'Capricorn': 'Dec 22 - Jan 19', 'Aquarius': 'Jan 20 - Feb 18', 'Pisces': 'Feb 19 - Mar 20'
+        };
+
+        const ALBUM_NAMES = {
+            'Aquarius': 'Abbey Road', 'Aries': 'Please Please Me', 'Cancer': 'Beatles For Sale',
+            'Capricorn': 'The White Album', 'Gemini': 'A Hard Day\'s Night', 'Leo': 'Help!',
+            'Libra': 'Revolver', 'Pisces': 'Let It Be', 'Sagittarius': 'Magical Mystery Tour',
+            'Scorpio': 'Sgt. Pepper\'s', 'Taurus': 'With The Beatles', 'Virgo': 'Rubber Soul'
+        };
+
+        const CHARACTER_NAMES = {
+            'Mars': 'Sgt. Pepper', 'Sun': 'Billy Shears', 'Venus': 'Sexy Sadie',
+            'Mercury': 'Michelle', 'Moon': 'Lady Madonna', 'Saturn': 'Father McKenzie',
+            'Jupiter': 'King MG'
+        };
+
+        // ============================================================================
+        // SECTION 2: ASSET & UI LOGIC (Image Folders, FlipClock Logic, Placement)
+        // ============================================================================
+        const MOMENT_NAMES = ['Matutina', 'Meridiana', 'Vespera', 'Nocturna', 'Aurora'];
+        const MOMENT_IMAGES = {
+            'Matutina': 'assets/Matutina.png', 'Meridiana': 'assets/Meridiana.png',
+            'Vespera': 'assets/Vespera.png', 'Nocturna': 'assets/Nocturna.png',
+            'Aurora': 'assets/Aurora.png'
+        };
+
+        const BACKGROUNDS = {
+            'Aquarius': 'assets/cover_aquarius.jpg', 'Aries': 'assets/cover_aries.jpg',
+            'Cancer': 'assets/cover_cancer.png', 'Capricorn': 'assets/cover_capricorn.png',
+            'Gemini': 'assets/cover_gemini.jpg', 'Leo': 'assets/cover_leo.png',
+            'Libra': 'assets/cover_libra.png', 'Pisces': 'assets/cover_pisces.jpg',
+            'Sagittarius': 'assets/cover_sagittarius.jpg', 'Scorpio': 'assets/cover_scorpio.jpg',
+            'Taurus': 'assets/cover_taurus.png', 'Virgo': 'assets/cover_virgo.jpg'
+        };
+
+        const SIGN_ICONS = {
+            'Aries': 'assets/sign_aries.png', 'Taurus': 'assets/sign_taurus.png',
+            'Gemini': 'assets/sign_gemini.png', 'Cancer': 'assets/sign_cancer.png',
+            'Leo': 'assets/sign_leo.png', 'Virgo': 'assets/sign_virgo.png',
+            'Libra': 'assets/sign_libra.png', 'Scorpio': 'assets/sign_scorpio.png',
+            'Sagittarius': 'assets/sign_sagittarius.png', 'Capricorn': 'assets/sign_capricorn.png',
+            'Aquarius': 'assets/sign_aquarius.png', 'Pisces': 'assets/sign_pisces.png'
+        };
+
+        const CHARACTERS = {
+            'Jupiter': 'assets/character_jupiter.png', 'Mars': 'assets/character_mars.png',
+            'Mercury': 'assets/character_mercury.png', 'Moon': 'assets/character_moon.png',
+            'Saturn': 'assets/character_saturn.png', 'Sun': 'assets/character_sun.png',
+            'Venus': 'assets/character_venus.png'
+        };
+
+        function getCardStyle(signName) {
+            if (BACKGROUNDS[signName]) {
+                return `style="background-image: url('${BACKGROUNDS[signName]}'); background-position: bottom center; background-size: contain; background-repeat: no-repeat;" class="flip-card"`;
+            }
+            return `class="flip-card"`;
+        }
+
+        function getCharacterStyle(id) {
+            if (CHARACTERS[id]) {
+                return `style = "background: white url('${CHARACTERS[id]}') center center / contain no-repeat;" class="flip-card"`;
+            }
+            return `class="flip-card"`;
+        }
+
+        function getDecanNumber(longitude) {
+            return Math.floor(longitude / 10) + 1;
+        }
+
+        function updateElement(id, text) {
+            const el = document.getElementById(id);
+            if (el && el.textContent !== text) {
+                el.textContent = text;
+            }
+        }
+
+        function updatePlanet(name, degree) {
+            const el = document.querySelector(`#card-${name}-deg .asc-value`);
+            if (el) el.textContent = `${String(degree).padStart(2, '0')}°`;
+        }
+
+        // ============================================================================
+        // SECTION 3: CORE LOGIC & MATH (Planet Math, Ascendant, VSOP87 Engine)
+        // ============================================================================
+        const Astro = {
+            RAD: Math.PI / 180, DEG: 180 / Math.PI,
+            norm: (a) => { a %= 360; return a < 0 ? a + 360 : a; },
+            getDeltaT: () => 69.4,
+            getJD: (date) => (date.getTime() / 86400000) + 2440587.5,
+            getT: (jd) => {
+                const dt = Astro.getDeltaT() / 86400;
+                return (jd + dt - 2451545.0) / 36525.0;
+            }
+        };
+
+        const PLANET_DATA = {
+            Sun: { L: [280.466, 36000.769], a: 1.000, e: 0.0167, p: 282.94, symbol: '☉' },
+            Moon: { L: [218.316, 481267.881], a: 0.002, e: 0.0549, p: 83.35, symbol: '☽' },
+            Mercury: { L: [252.251, 149472.674], a: 0.387, e: 0.2056, p: 77.45, symbol: '☿' },
+            Venus: { L: [181.980, 58517.815], a: 0.723, e: 0.0067, p: 131.53, symbol: '♀' },
+            Mars: { L: [355.453, 19140.302], a: 1.523, e: 0.0934, p: 336.04, symbol: '♂' },
+            Jupiter: { L: [34.404, 3034.746], a: 5.202, e: 0.0484, p: 14.72, symbol: '♃' },
+            Saturn: { L: [49.944, 1222.113], a: 9.554, e: 0.0555, p: 92.43, symbol: '♄' }
+        };
+
+        const ZODIAC_SIGNS = [
+            { name: 'Aries', symbol: '♈', start: 0 }, { name: 'Taurus', symbol: '♉', start: 30 },
+            { name: 'Gemini', symbol: '♊', start: 60 }, { name: 'Cancer', symbol: '♋', start: 90 },
+            { name: 'Leo', symbol: '♌', start: 120 }, { name: 'Virgo', symbol: '♍', start: 150 },
+            { name: 'Libra', symbol: '♎', start: 180 }, { name: 'Scorpio', symbol: '♏', start: 210 },
+            { name: 'Sagittarius', symbol: '♐', start: 240 }, { name: 'Capricorn', symbol: '♑', start: 270 },
+            { name: 'Aquarius', symbol: '♒', start: 300 }, { name: 'Pisces', symbol: '♓', start: 330 }
+        ];
+
+        const OBSERVER_LAT = 18.9; const OBSERVER_LON = -69.75;
+
+        function getCurrentMoment(ascendantDegree) {
+            const decanNumber = Math.floor(ascendantDegree / 10) + 1;
+            const momentIndex = Math.floor((decanNumber - 1) / 7);
+            if (momentIndex >= 5) return { name: 'Matutina', number: 1 };
+            return { name: MOMENT_NAMES[momentIndex], number: momentIndex + 1 };
+        }
+
+        function getZodiacSign(deg) {
+            let longitude = deg % 360; if (longitude < 0) longitude += 360;
+            for (let i = ZODIAC_SIGNS.length - 1; i >= 0; i--) {
+                if (longitude >= ZODIAC_SIGNS[i].start) {
+                    const decimalDeg = longitude - ZODIAC_SIGNS[i].start;
+                    const d = Math.floor(decimalDeg);
+                    const m = Math.floor((decimalDeg - d) * 60);
+                    const s = Math.floor(((decimalDeg - d) * 60 - m) * 60);
+                    return { ...ZODIAC_SIGNS[i], degree: d, min: m, sec: s };
+                }
+            }
+            return { ...ZODIAC_SIGNS[0], degree: 0, min: 0, sec: 0 };
+        }
+
+        function calculateGeocentric(id, T, earth) {
+            const p = PLANET_DATA[id];
+            const L = Astro.norm(p.L[0] + p.L[1] * T);
+            const M = Astro.norm(L - p.p);
+            const E = M + p.e * Astro.DEG * Math.sin(M * Astro.RAD);
+            const xv = p.a * (Math.cos(E * Astro.RAD) - p.e);
+            const yv = p.a * (Math.sqrt(1 - p.e * p.e) * Math.sin(E * Astro.RAD));
+            const r = Math.sqrt(xv * xv + yv * yv);
+            const v = Math.atan2(yv, xv) * Astro.DEG;
+            const hLon = Astro.norm(v + p.p);
+            const xh = r * Math.cos(hLon * Astro.RAD);
+            const yh = r * Math.sin(hLon * Astro.RAD);
+            const xe = earth.r * Math.cos(earth.lon * Astro.RAD);
+            const ye = earth.r * Math.sin(earth.lon * Astro.RAD);
+            return Astro.norm(Math.atan2(yh - ye, xh - xe) * Astro.DEG);
+        }
+
+        function calculateAscendant(jd, T) {
+            const gmst = (280.4606 + 360.985647 * (jd - 2451545.0)) % 360;
+            const lmst = (gmst + OBSERVER_LON + 360) % 360;
+            const eps = 23.439 - 0.013 * T;
+            const num = Math.cos(lmst * Astro.RAD);
+            const den = -Math.sin(lmst * Astro.RAD) * Math.cos(eps * Astro.RAD) - Math.tan(OBSERVER_LAT * Astro.RAD) * Math.sin(eps * Astro.RAD);
+            return Astro.norm(Math.atan2(num, den) * Astro.DEG);
+        }
+
+        function getDecanProgress(degree) {
+            const decanDegree = degree % 10; let bars = '';
+            for (let i = 0; i < 10; i++) {
+                const filled = i < decanDegree;
+                const barStyle = filled ? 'background: #4f46e5; box-shadow: 0 0 4px rgba(79, 70, 229, 0.5);' : 'background: #e2e8f0;';
+                bars += `<div style="flex: 1; height: 100%; border-radius: 3px; ${barStyle}"></div>`;
+            }
+            return bars;
+        }
+
+        function getMomentProgress(ascendantDegree) {
+            const decanNumber = Math.floor(ascendantDegree / 10) + 1; // 1 to 36
+            // Each moment spans 7.2 degrees if perfectly divided, but here we use 7 decans (70 deg) per moment.
+            // Aurora (the 5th) handles the remainder. 
+            // We want to show which of the 7 decans within the moment we are in.
+            const filledBars = ((decanNumber - 1) % 7) + 1;
+            let bars = '';
+            for (let i = 0; i < 7; i++) {
+                const filled = i < filledBars;
+                const barStyle = filled ? 'background: #4f46e5; box-shadow: 0 0 4px rgba(79, 70, 229, 0.5);' : 'background: #e2e8f0;';
+                bars += `<div style="flex: 1; height: 100%; border-radius: 3px; ${barStyle}"></div>`;
+            }
+            return bars;
+        }
+
+        function getSignProgress(degree) {
+            let bars = ''; const filledBars = Math.floor(degree / 3);
+            for (let i = 0; i < 10; i++) {
+                const filled = i < filledBars;
+                const barStyle = filled ? 'background: #4f46e5; box-shadow: 0 0 4px rgba(79, 70, 229, 0.5);' : 'background: #e2e8f0;';
+                bars += `<div style="flex: 1; height: 100%; border-radius: 3px; ${barStyle}"></div>`;
+            }
+            return bars;
+        }
+
+        // ============================================================================
+        // SECTION 4: CARD ARCHITECTURE (Layout Templates & Components)
+        // ============================================================================
+        function renderAscendantRow(zodiac, sign, d, m, s, longitude) {
+            const whiteCardClass = 'class="flip-card degree-card"';
+            const hourCardStyle = BACKGROUNDS[sign] ?
+                `style="background: #000; position: relative; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 1rem 1.5rem 1rem;" class="flip-card"` :
+                'class="flip-card" style="background: #000;"';
+
+            const moment = getCurrentMoment(longitude);
+            const momentImage = MOMENT_IMAGES[moment.name];
+            const albumName = ALBUM_NAMES[sign] || sign;
+
+            const hourCardContent = `
+                <div style="background: #000; width: 100%; border-radius: 12px 12px 0 0; position: absolute; top: 0; left: 0; height: 18%; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                    <div style="border: 2px solid #FFD700; border-radius: 6px; padding: 4px 12px; display: flex; align-items: center; gap: 10px;">
+                        <div style="font-size: 8px; color: #a0aec0; font-weight: 800; letter-spacing: 1px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 10px;">HOUR</div>
+                        <div class="asc-title" style="color: #FFD700; font-size: 11px;">${albumName.toUpperCase()}</div>
+                    </div>
+                </div>
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.6); padding: 0.5rem 0.75rem; border-radius: 0 0 12px 12px; display: flex; align-items: center; justify-content: center; z-index: 3;">
+                    <div id="bar-asc-hour" style="display: flex; gap: 2px; width: 70%; max-width: 90px; height: 20px;">${getSignProgress(d)}</div>
+                </div>
+                <div id="asc-cover-bg" style="position: absolute; top: 18%; bottom: 15%; left: 0; width: 100%; height: auto; background-image: url('${BACKGROUNDS[sign]}'); background-position: center center; background-size: contain; background-repeat: no-repeat; z-index: 0;"></div>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1;">
+                    <img id="asc-center-icon" src="${SIGN_ICONS[sign]}" style="width: 70px; height: 70px; filter: brightness(0) invert(1) drop-shadow(0 4px 12px rgba(0,0,0,0.7)); opacity: 0.8;" />
+                </div>
+            `;
+
+            const momentCardContent = `
+                <div style="background: #000; width: 100%; border-radius: 12px 12px 0 0; position: absolute; top: 0; left: 0; height: 18%; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                    <div style="border: 2px solid #FFD700; border-radius: 6px; padding: 4px 12px; display: flex; align-items: center; gap: 10px;">
+                        <div style="font-size: 8px; color: #a0aec0; font-weight: 800; letter-spacing: 1px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 10px;">5 MOMENTS<br>OF THE DAY</div>
+                        <div class="asc-title" style="color: #FFD700; font-size: 11px;">${moment.name.toUpperCase()}</div>
+                    </div>
+                </div>
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.6); padding: 0.5rem 0.75rem; border-radius: 0 0 12px 12px; display: flex; align-items: center; justify-content: center; z-index: 3;">
+                    <div id="bar-asc-moment" style="display: flex; gap: 2px; width: 70%; max-width: 90px; height: 20px;">${getMomentProgress(longitude)}</div>
+                </div>
+                <div id="moment-poster-bg" style="position: absolute; top: 18%; bottom: 15%; left: 0; width: 100%; height: auto; background-image: url('${momentImage}'); background-position: center center; background-size: contain; background-repeat: no-repeat; z-index: 0;"></div>
+            `;
+
+            const decanCardContent = `
+                <div style="background: #000; width: 100%; border-radius: 12px 12px 0 0; position: absolute; top: 0; left: 0; height: 18%; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                    <div style="border: 2px solid #FFD700; border-radius: 6px; padding: 4px 12px; display: flex; align-items: center; gap: 10px;">
+                        <div style="font-size: 8px; color: #a0aec0; font-weight: 800; letter-spacing: 1px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 10px;">PLAYLIST<br>OF LIFE</div>
+                        <div class="asc-title" style="color: #FFD700; font-size: 11px;">NOW PLAYING</div>
+                    </div>
+                </div>
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.6); padding: 0.5rem 0.75rem; border-radius: 0 0 12px 12px; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <div style="display: flex; gap: 2px; width: 70%; max-width: 90px; height: 20px;">${getDecanProgress(d)}</div>
+                </div>
+            `;
+
+            return `
+            <div class="asc-row">
+                <div class="flip-card decan-card" id="card-asc-deg" style="background: #000 url('assets/decan_${getDecanNumber(longitude)}.png') center center / contain no-repeat; position: relative; border: 1px solid #333;">${decanCardContent}</div>
+                <div class="flip-card" id="card-asc-moment" style="background: #000; position: relative;">${momentCardContent}</div>
+                <div ${hourCardStyle} style="background: #000; border: 1px solid #333;">${hourCardContent}</div>
+                <div class="flip-card degree-card" style="background: #fff; position: relative;">
+                    <div style="background: #fff; width: 100%; border-radius: 12px 12px 0 0; position: absolute; top: 0; left: 0; height: 18%; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                        <div style="font-family: 'Impact', 'Arial Black', sans-serif; font-size: 24px; color: #1a202c; letter-spacing: 2px; text-transform: uppercase;">MINUTES</div>
+                    </div>
+                    <div class="asc-value flip-clock-display" id="val-asc-min">${String(d).padStart(2, '0')}</div>
+                </div>
+                <div class="flip-card degree-card" style="background: #fff; position: relative;">
+                    <div style="background: #fff; width: 100%; border-radius: 12px 12px 0 0; position: absolute; top: 0; left: 0; height: 18%; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                        <div style="font-family: 'Impact', 'Arial Black', sans-serif; font-size: 24px; color: #1a202c; letter-spacing: 2px; text-transform: uppercase;">SECONDS</div>
+                    </div>
+                    <div class="asc-value flip-clock-display" id="val-asc-sec">${String(s).padStart(2, '0')}</div>
+                </div>
+            </div>`;
+        }
+
+        function createPlanetRow(name, symbol, zSymbol, zName, degree, longitude) {
+            const charCardAttr = getCharacterStyle(name);
+            const albumName = ALBUM_NAMES[zName] || zName;
+            return `
+                <div class="planet-row">
+                <div ${charCardAttr} style="position: relative;">
+                    <div class="asc-icon" style="margin: auto; height: 100%; display: flex; align-items: center; justify-content: center;">${symbol}</div>
+                    <div style="position: absolute; bottom: 1.5rem; left: 50%; transform: translateX(-50%); display: flex; gap: 2px; width: 70%; max-width: 90px; height: 20px;">${getDecanProgress(degree)}</div>
+                </div>
+                <div class="flip-card" style="background: #000; position: relative; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 1rem 1.5rem 1rem;">
+                    <div style="position: absolute; top: 7%; left: 50%; transform: translateX(-50%); text-align: center; z-index: 3; border: 2px solid #FFD700; padding: 4px 12px; border-radius: 6px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);">
+                        <div style="display: flex; gap: 0.75rem; align-items: center;">
+                            <div style="font-size: 8px; color: #a0aec0; font-weight: 800; letter-spacing: 1px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 10px;">ALBUM</div>
+                            <div style="text-align: left;">
+                                <div style="font-size: 1rem; font-weight: 700; color: #fff; line-height: 1.1;">${albumName}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="planet-poster-${name}" style="position: absolute; top: 0; bottom: 0; left: 0; width: 100%; height: auto; background-image: url('${BACKGROUNDS[zName]}'); background-position: center center; background-size: contain; background-repeat: no-repeat; z-index: 0;"></div>
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1;"><img src="${SIGN_ICONS[zName]}" style="width: 80px; height: 80px; filter: brightness(0) invert(1) opacity(0.7);" /></div>
+                </div>
+                <div class="flip-card decan-card" id="card-${name}-deg" style="background: white url('assets/decan_${getDecanNumber(longitude)}.png') center center / contain no-repeat; position: relative;">
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.9); padding: 0 1.5rem; display: flex; align-items: center; justify-content: flex-end; border-radius: 0 0 12px 12px; height: 2.25rem; z-index: 5;">
+                        <div class="asc-value" style="font-size: 18px; color: #000; font-weight: 800; letter-spacing: 1px;">${String(degree).padStart(2, '0')}°</div>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        // ============================================================================
+        // INITIALIZATION & MAIN LOOP
+        // ============================================================================
+        const PLANET_IDS = ['Moon', 'Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
+
+        function calculatePositions() {
+            const now = new Date(); const jd = Astro.getJD(now); const T = Astro.getT(jd);
+            const mainContainer = document.getElementById('mainContainer');
+            const sunLon = Astro.norm(PLANET_DATA.Sun.L[0] + PLANET_DATA.Sun.L[1] * T);
+            const earth = { r: 1.0, lon: Astro.norm(sunLon + 180) };
+            const ascAngle = calculateAscendant(jd, T); const ascZ = getZodiacSign(ascAngle);
+            const ascFract = ascAngle - Math.floor(ascAngle);
+            ascZ.sec = Math.floor((ascFract * 240) % 60);
+
+            if (mainContainer.innerHTML === '') {
+                let html = renderAscendantRow(ascZ.symbol, ascZ.name, ascZ.degree, ascZ.min, ascZ.sec, ascAngle);
+                PLANET_IDS.forEach(id => {
+                    let lon = (id === 'Sun') ? sunLon : (id === 'Moon' ? Astro.norm(PLANET_DATA.Moon.L[0] + PLANET_DATA.Moon.L[1] * T + 6.29 * Math.sin((134.96 + 477198.86 * T) * Astro.RAD)) : calculateGeocentric(id, T, earth));
+                    const z = getZodiacSign(lon); html += createPlanetRow(id, PLANET_DATA[id].symbol, z.symbol, z.name, z.degree, lon);
+                });
+                mainContainer.innerHTML = html;
+                return;
+            }
+
+            // Updates
+            const elCoverBg = document.getElementById('asc-cover-bg'); const elCenterIcon = document.getElementById('asc-center-icon');
+            if (elCoverBg && elCenterIcon && elCenterIcon.src.indexOf(SIGN_ICONS[ascZ.name]) === -1) {
+                elCoverBg.style.backgroundImage = `url('${BACKGROUNDS[ascZ.name]}')`; elCenterIcon.src = SIGN_ICONS[ascZ.name];
+            }
+            const moment = getCurrentMoment(ascAngle); const elMomentBg = document.getElementById('moment-poster-bg');
+            const elMomentTitle = document.querySelector('#card-asc-moment .asc-title');
+            if (elMomentBg && elMomentTitle && elMomentBg.style.backgroundImage.indexOf(MOMENT_IMAGES[moment.name]) === -1) {
+                elMomentBg.style.backgroundImage = `url('${MOMENT_IMAGES[moment.name]}')`; elMomentTitle.textContent = moment.name.toUpperCase();
+            }
+            const elMomentBar = document.getElementById('bar-asc-moment'); if (elMomentBar) elMomentBar.innerHTML = getMomentProgress(ascAngle);
+            const elBarAsc = document.getElementById('bar-asc-hour'); if (elBarAsc) elBarAsc.innerHTML = getSignProgress(ascZ.degree);
+            updateElement('val-asc-min', `${String(ascZ.degree).padStart(2, '0')}`); updateElement('val-asc-sec', `${String(ascZ.sec).padStart(2, '0')}`);
+            PLANET_IDS.forEach(id => {
+                let lon = (id === 'Sun') ? sunLon : (id === 'Moon' ? Astro.norm(PLANET_DATA.Moon.L[0] + PLANET_DATA.Moon.L[1] * T + 6.29 * Math.sin((134.96 + 477198.86 * T) * Astro.RAD)) : calculateGeocentric(id, T, earth));
+                updatePlanet(id, getZodiacSign(lon).degree);
+            });
+            document.getElementById('footer').textContent = `Running Internal Engine • ${now.toLocaleTimeString()}`;
+        }
+
+        function createStars() {
+            const container = document.getElementById('stars');
+            for (let i = 0; i < 50; i++) {
+                const s = document.createElement('div'); s.className = 'star';
+                s.style.width = (Math.random() * 2 + 1) + 'px'; s.style.height = s.style.width;
+                s.style.top = Math.random() * 100 + '%'; s.style.left = Math.random() * 100 + '%';
+                s.style.animationDelay = Math.random() * 3 + 's'; container.appendChild(s);
+            }
+        }
+
+        createStars(); calculatePositions(); setInterval(calculatePositions, 1000);
+
+        // ============================================================================
+        // SECTION 5: COMPONENT COMBINATION MANUAL (Card Assembly Guide)
+        // ============================================================================
+        /**
+         * 1. ASCENDANT ROW: Generated by `renderAscendantRow()`. Pulls from `getCurrentMoment`, `MOMENT_IMAGES`, `SIGN_ICONS`.
+         * 2. PLANET ROWS: Generated by `createPlanetRow()`. Combines `PLANET_DATA`, `CHARACTERS`, `BACKGROUNDS`.
+         * 3. LOGIC: `calculatePositions()` drives all real-time updates for degrees, moments, and energy bars.
+         */
+    </script>
+</body>
+
+</html>
