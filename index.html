@@ -368,6 +368,21 @@
             'Aurora': 'assets/Aurora.png'
         };
 
+        const ZODIAC_TRACKS = {
+            "Aries": ["Twist And Shout", "Please Please Me", "I Saw Her Standing There"],
+            "Taurus": ["Please Mr. Postman", "Till There Was You", "Money"],
+            "Gemini": ["I'm So Happy Just To Dance With You", "Can't Buy Me Love", "If I Fell"],
+            "Cancer": ["Eight Days A Week", "I'll Follow The Sun", "Mr. Moonlight"],
+            "Leo": ["Help", "I've Just Seen A Face", "Act Naturally"],
+            "Virgo": ["I'm Looking Through You", "The Word", "Think For Yourself"],
+            "Libra": ["I'm Only Sleeping", "Got To Get You Into My Life", "Tomorrow Never Knows"],
+            "Scorpio": ["Within You, Without You", "Getting Better", "With A Little Help From My Friends"],
+            "Sagittarius": ["All You Need Is Love", "The Magical Mystery Tour", "Baby, You Are a Rich Man"],
+            "Capricorn": ["Dear Prudence", "Blackbird", "While My Guitar Gently Weeps"],
+            "Aquarius": ["Come Together", "The End", "Because"],
+            "Pisces": ["Let It Be", "Across The Universe", "I Got A Feeling"]
+        };
+
         const BACKGROUNDS = {
             'Aquarius': 'assets/cover_aquarius.jpg', 'Aries': 'assets/cover_aries.jpg',
             'Cancer': 'assets/cover_cancer.png', 'Capricorn': 'assets/cover_capricorn.png',
@@ -505,6 +520,12 @@
             return Astro.norm(Math.atan2(num, den) * Astro.DEG);
         }
 
+        function getDecanNumber(deg) {
+            let d = deg % 360;
+            if (d < 0) d += 360;
+            return Math.floor(d / 10) + 1;
+        }
+
         function getDecanProgress(degree) {
             const decanDegree = degree % 10; let bars = '';
             for (let i = 0; i < 10; i++) {
@@ -555,9 +576,9 @@
 
             const hourCardContent = `
                 <div style="background: #000; width: 100%; border-radius: 12px 12px 0 0; position: absolute; top: 0; left: 0; height: 18%; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                    <div style="border: 2px solid #FFD700; border-radius: 6px; padding: 4px 12px; display: flex; align-items: center; gap: 10px;">
-                        <div style="font-size: 8px; color: #a0aec0; font-weight: 800; letter-spacing: 1px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 10px;">HOUR</div>
-                        <div class="asc-title" style="color: #FFD700; font-size: 11px;">${albumName.toUpperCase()}</div>
+                    <div style="border: 1.5px solid #FFD700; border-radius: 6px; padding: 3.5px; display: flex; align-items: center; gap: 8px; min-height: 36px; max-width: 100%;">
+                        <div style="font-size: 8px; color: #a0aec0; font-weight: 800; letter-spacing: 0.5px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 8px; line-height: 1.2; text-align: right; min-width: max-content; display: flex; align-items: center; min-height: 24px;">HOUR</div>
+                        <div class="asc-title" style="color: #FFD700; font-size: 11px; line-height: 1.3; white-space: nowrap;">${albumName.toUpperCase()}</div>
                     </div>
                 </div>
                 <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.6); padding: 0.5rem 0.75rem; border-radius: 0 0 12px 12px; display: flex; align-items: center; justify-content: center; z-index: 3;">
@@ -571,22 +592,29 @@
 
             const momentCardContent = `
                 <div style="background: #000; width: 100%; border-radius: 12px 12px 0 0; position: absolute; top: 0; left: 0; height: 18%; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                    <div style="border: 2px solid #FFD700; border-radius: 6px; padding: 4px 12px; display: flex; align-items: center; gap: 10px;">
-                        <div style="font-size: 8px; color: #a0aec0; font-weight: 800; letter-spacing: 1px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 10px;">5 MOMENTS<br>OF THE DAY</div>
-                        <div class="asc-title" style="color: #FFD700; font-size: 11px;">${moment.name.toUpperCase()}</div>
+                    <div style="border: 1.5px solid #FFD700; border-radius: 6px; padding: 3.5px; display: flex; align-items: center; gap: 8px; min-height: 36px; max-width: 100%;">
+                        <div style="font-size: 8px; color: #a0aec0; font-weight: 800; letter-spacing: 0.5px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 8px; line-height: 1.2; text-align: right; min-width: max-content;">5 MOMENTS<br>OF THE DAY</div>
+                        <div class="asc-title" style="color: #FFD700; font-size: 11px; line-height: 1.3; white-space: nowrap;">${moment.name.toUpperCase()}</div>
                     </div>
                 </div>
                 <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.6); padding: 0.5rem 0.75rem; border-radius: 0 0 12px 12px; display: flex; align-items: center; justify-content: center; z-index: 3;">
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.6); padding: 0.5rem 0.75rem; border-radius: 0 0 12px 12px; display: flex; align-items: center; justify-content: center; z-index: 3;">
                     <div id="bar-asc-moment" style="display: flex; gap: 2px; width: 70%; max-width: 90px; height: 20px;">${getMomentProgress(longitude)}</div>
+                </div>
                 </div>
                 <div id="moment-poster-bg" style="position: absolute; top: 18%; bottom: 15%; left: 0; width: 100%; height: auto; background-image: url('${momentImage}'); background-position: center center; background-size: contain; background-repeat: no-repeat; z-index: 0;"></div>
             `;
 
+            // Calculate song for Ascendant
+            const ascDecanNumber = Math.floor(d / 10) + 1;
+            const ascSignTracks = ZODIAC_TRACKS[sign] || [];
+            const ascSongName = ascSignTracks[ascDecanNumber - 1] || "Unknown Song";
+
             const decanCardContent = `
                 <div style="background: #000; width: 100%; border-radius: 12px 12px 0 0; position: absolute; top: 0; left: 0; height: 18%; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                    <div style="border: 2px solid #FFD700; border-radius: 6px; padding: 4px 12px; display: flex; align-items: center; gap: 10px;">
-                        <div style="font-size: 8px; color: #a0aec0; font-weight: 800; letter-spacing: 1px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 10px;">PLAYLIST<br>OF LIFE</div>
-                        <div class="asc-title" style="color: #FFD700; font-size: 11px;">NOW PLAYING</div>
+                    <div style="border: 1.5px solid #FFD700; border-radius: 6px; padding: 3.5px; display: flex; align-items: center; gap: 8px; min-height: 38px; max-width: 100%;">
+                        <div style="font-size: 8px; color: #a0aec0; font-weight: 800; letter-spacing: 0.5px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 8px; line-height: 1.2; text-align: right; min-width: max-content;">NOW<br>PLAYING</div>
+                        <div class="asc-title" style="color: #FFD700; font-size: 11px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1;">${ascSongName.toUpperCase()}</div>
                     </div>
                 </div>
                 <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.6); padding: 0.5rem 0.75rem; border-radius: 0 0 12px 12px; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
@@ -596,7 +624,7 @@
 
             return `
             <div class="asc-row">
-                <div class="flip-card decan-card" id="card-asc-deg" style="background: #000 url('assets/decan_${getDecanNumber(longitude)}.png') center center / contain no-repeat; position: relative; border: 1px solid #333;">${decanCardContent}</div>
+                <div class="flip-card decan-card" id="card-asc-deg" style="background: #000 url('assets/decan_${getDecanNumber(longitude)}.png') center center / contain no-repeat; position: relative;">${decanCardContent}</div>
                 <div class="flip-card" id="card-asc-moment" style="background: #000; position: relative;">${momentCardContent}</div>
                 <div ${hourCardStyle} style="background: #000; border: 1px solid #333;">${hourCardContent}</div>
                 <div class="flip-card degree-card" style="background: #fff; position: relative;">
@@ -617,6 +645,15 @@
         function createPlanetRow(name, symbol, zSymbol, zName, degree, longitude) {
             const charCardAttr = getCharacterStyle(name);
             const albumName = ALBUM_NAMES[zName] || zName;
+            const decanNumber = Math.floor(degree / 10) + 1;
+
+            // Map song directly from the sign (album) and decan
+            const signTracks = ZODIAC_TRACKS[zName] || [];
+            const songName = signTracks[decanNumber - 1] || "Unknown Song";
+
+            // Shared Badge Style for visual anchor consistency
+            const badgeStyle = "position: absolute; top: 7%; left: 50%; transform: translateX(-50%); text-align: center; z-index: 3; border: 2px solid #FFD700; padding: 4px 12px; border-radius: 6px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); white-space: nowrap; min-height: 38px; display: flex; align-items: center; justify-content: center;";
+
             return `
                 <div class="planet-row">
                 <div ${charCardAttr} style="position: relative;">
@@ -624,7 +661,7 @@
                     <div style="position: absolute; bottom: 1.5rem; left: 50%; transform: translateX(-50%); display: flex; gap: 2px; width: 70%; max-width: 90px; height: 20px;">${getDecanProgress(degree)}</div>
                 </div>
                 <div class="flip-card" style="background: #000; position: relative; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 1rem 1.5rem 1rem;">
-                    <div style="position: absolute; top: 7%; left: 50%; transform: translateX(-50%); text-align: center; z-index: 3; border: 2px solid #FFD700; padding: 4px 12px; border-radius: 6px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);">
+                    <div style="${badgeStyle}">
                         <div style="display: flex; gap: 0.75rem; align-items: center;">
                             <div style="font-size: 8px; color: #a0aec0; font-weight: 800; letter-spacing: 1px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 10px;">ALBUM</div>
                             <div style="text-align: left;">
@@ -636,6 +673,14 @@
                     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1;"><img src="${SIGN_ICONS[zName]}" style="width: 80px; height: 80px; filter: brightness(0) invert(1) opacity(0.7);" /></div>
                 </div>
                 <div class="flip-card decan-card" id="card-${name}-deg" style="background: white url('assets/decan_${getDecanNumber(longitude)}.png') center center / contain no-repeat; position: relative;">
+                    <div style="${badgeStyle}">
+                        <div style="display: flex; gap: 0.75rem; align-items: center;">
+                            <div style="font-size: 8px; color: #a0aec0; font-weight: 800; letter-spacing: 1px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 10px;">SONG</div>
+                            <div style="text-align: left;">
+                                <div style="font-size: 1rem; font-weight: 700; color: #fff; line-height: 1.1;">${songName.toUpperCase()}</div>
+                            </div>
+                        </div>
+                    </div>
                     <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.9); padding: 0 1.5rem; display: flex; align-items: center; justify-content: flex-end; border-radius: 0 0 12px 12px; height: 2.25rem; z-index: 5;">
                         <div class="asc-value" style="font-size: 18px; color: #000; font-weight: 800; letter-spacing: 1px;">${String(degree).padStart(2, '0')}°</div>
                     </div>
@@ -677,6 +722,24 @@
             if (elMomentBg && elMomentTitle && elMomentBg.style.backgroundImage.indexOf(MOMENT_IMAGES[moment.name]) === -1) {
                 elMomentBg.style.backgroundImage = `url('${MOMENT_IMAGES[moment.name]}')`; elMomentTitle.textContent = moment.name.toUpperCase();
             }
+
+            // Update Ascendant Song
+            const ascDecanNumber = Math.floor(ascZ.degree / 10) + 1;
+            const ascSignTracks = ZODIAC_TRACKS[ascZ.name] || [];
+            const ascSongName = ascSignTracks[ascDecanNumber - 1] || "Unknown Song";
+            const elAscSong = document.querySelector('#card-asc-deg .asc-title');
+            if (elAscSong && elAscSong.textContent !== ascSongName.toUpperCase()) {
+                elAscSong.textContent = ascSongName.toUpperCase();
+            }
+            const elAscDecanCard = document.getElementById('card-asc-deg');
+            if (elAscDecanCard) {
+                // Check if background needs update (optimization: compare current URL)
+                const newBgParams = `url('assets/decan_${getDecanNumber(ascAngle)}.png')`;
+                if (elAscDecanCard.style.backgroundImage.indexOf(`decan_${getDecanNumber(ascAngle)}.png`) === -1) {
+                    elAscDecanCard.style.backgroundImage = newBgParams;
+                }
+            }
+
             const elMomentBar = document.getElementById('bar-asc-moment'); if (elMomentBar) elMomentBar.innerHTML = getMomentProgress(ascAngle);
             const elBarAsc = document.getElementById('bar-asc-hour'); if (elBarAsc) elBarAsc.innerHTML = getSignProgress(ascZ.degree);
             updateElement('val-asc-min', `${String(ascZ.degree).padStart(2, '0')}`); updateElement('val-asc-sec', `${String(ascZ.sec).padStart(2, '0')}`);
