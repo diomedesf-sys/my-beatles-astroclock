@@ -1,446 +1,403 @@
-<!-- Beatles AstroClock Master Copy 1 -->
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Celestial Horologium | Day Mode</title>
+    <title>Round Beatles Astroclock - Dashboard</title>
     <style>
-        * {
+        body {
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
             margin: 0;
-            padding: 0;
+            padding: 20px;
+            font-family: sans-serif;
             box-sizing: border-box;
         }
-
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            font-family: 'Courier New', monospace;
-            position: relative;
-            overflow-y: auto;
+        
+        .dashboard-title {
+            margin: 0 0 30px 0;
+            font-size: 1.5rem;
             color: #333;
-        }
-
-        /* Stars Background */
-        .star {
-            position: absolute;
-            background: #94a3b8;
-            border-radius: 50%;
-            animation: twinkle 3s infinite;
-        }
-
-        @keyframes twinkle {
-
-            0%,
-            100% {
-                opacity: 0.3;
-            }
-
-            50% {
-                opacity: 0.8;
-            }
-        }
-
-        /* Header */
-        .header {
-            margin-bottom: 2rem;
+            letter-spacing: 2px;
             text-align: center;
-            z-index: 1;
-            animation: fadeIn 1s ease-out;
-        }
-
-        .title {
-            font-size: 2rem;
-            color: #1a202c;
-            margin-bottom: 0.5rem;
-            font-weight: 300;
-            letter-spacing: 0.1em;
-        }
-
-        .subtitle {
-            color: #555;
-            font-size: 0.8rem;
-            letter-spacing: 0.2em;
             text-transform: uppercase;
-            font-weight: bold;
         }
 
-        .location {
-            color: #666;
-            font-size: 0.7rem;
-            margin-top: 0.5rem;
-            opacity: 0.9;
-            font-weight: 600;
+        /* "WHERE ARE THEY NOW?" PANEL */
+        .dashboard-subtitle {
+            margin: 30px 0 12px 0;
+            font-size: 0.75rem;
+            color: #888;
+            letter-spacing: 3px;
+            text-align: center;
+            text-transform: uppercase;
         }
 
-        /* ROW LAYOUT */
-        .grid-container {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            max-width: 1000px;
-            gap: 2rem;
-            z-index: 1;
-            padding-bottom: 3rem;
-        }
-
-        .planet-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            width: 100%;
-        }
-
-        /* Ascendant Row Special Case (5 columns for Document 3) */
-        .asc-row {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 1.5rem;
-            width: 100%;
-        }
-
-        /* Responsive */
-        @media (max-width: 900px) {
-
-            .planet-row,
-            .asc-row {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* CARD STYLING */
-        /* All cards look consistent (Square/Rect style) */
-        /* Card Styling */
-        .flip-card {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        .ephemeris-panel {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between;
+            width: 100%;
+        }
+
+        .ephemeris-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 0 0 20px 0;
+        }
+
+        .ephemeris-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid #cbd5e1;
+            background-color: #fff;
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+            padding: 0;
+            transition: all 0.15s ease;
+        }
+
+        .ephemeris-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .ephemeris-btn.active {
+            border-color: #d4af37;
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+        }
+
+        /* Half-size song card, hidden until a planet is selected */
+        .eph-card-wrapper {
+            width: 70px;
+            height: 87.5px;
+            display: none;
+        }
+
+        .eph-card-wrapper .card-petit {
+            transform: scale(0.5);
+            transform-origin: top left;
+        }
+
+        /* 1. THE APP WRAPPER */
+        .app-layout {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 40px; 
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        /* 2. THE LEFT PANEL */
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px; 
+            width: 295px; /* Just wide enough for two petit cards + gap */
+            flex-shrink: 0;
+        }
+
+        /* 3. THE ROWS */
+        .card-row-center {
+            display: flex;
+            justify-content: center; /* Centers the top card (The Pyramid Tip) */
+            width: 100%;
+        }
+
+        .card-row-split {
+            display: flex;
+            justify-content: space-between; /* Places the two cards side by side */
+            width: 100%;
+        }
+
+        /* 4. THE PETIT CARD BASE */
+        .card-petit {
+            width: 140px;
+            height: 175px; /* 4:5 Aspect Ratio */
+            background-color: #000;
+            border-radius: 12px;
+            border: 1px solid #222;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
             position: relative;
             overflow: hidden;
-            /* Make cards taller to show full decan images */
-            aspect-ratio: 4 / 5;
-            width: 100%;
-            animation: fadeIn 0.8s ease-out backwards;
-            transition: transform 0.2s;
-            color: #333;
         }
 
-        /* Style for when an image is present */
-        .flip-card.has-bg {
-            color: white !important;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
-        }
-
-        /* White Card Style for Degree */
-        .flip-card.degree-card {
-            background: #ffffff !important;
-            color: #333 !important;
-            border: 1px solid #cbd5e1;
-        }
-
-        /* Decan Card with Image Background */
-        .flip-card.decan-card {
-            color: #333 !important;
-            border: 1px solid #cbd5e1;
-        }
-
-        /* Ensure specific elements in has-bg cards are readable */
-        .has-bg .asc-title,
-        .has-bg .asc-value,
-        .has-bg .asc-sub,
-        .has-bg .asc-icon {
-            color: white !important;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
-        }
-
-        .flip-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .asc-title {
-            font-size: 11px;
-            color: #4a5568;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            font-weight: 800;
-            line-height: 1.2;
-            text-align: center;
-        }
-
-        /* Override title color for white cards */
-        .degree-card .asc-title {
-            color: #4f46e5;
-        }
-
-        .asc-icon {
-            font-size: 3.5rem;
-            color: #fbbf24;
-            line-height: 1;
-            margin: 0.5rem 0;
-            text-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
-        }
-
-        /* Override icon color for white cards */
-        .degree-card .asc-icon {
-            color: #fbbf24;
-            text-shadow: none;
-        }
-
-        .asc-value {
-            font-size: 3rem;
-            color: #ffffff;
-            font-weight: bold;
-            font-family: 'Courier New', monospace;
-            line-height: 1;
-        }
-
-        /* Override value color for white cards */
-        .degree-card .asc-value {
-            color: #1a202c !important;
-        }
-
-        .asc-sub {
-            font-size: 0.7rem;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-top: auto;
-            font-weight: 600;
-        }
-
-        .degree-card .asc-sub {
-            color: #64748b;
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .footer {
-            text-align: center;
-            color: #4a5568;
-            font-size: 0.75rem;
-            opacity: 0.8;
-            z-index: 1;
-            font-weight: 500;
-            margin-bottom: 2rem;
-        }
-
-        /* FLIP CLOCK FACADE */
-        .degree-card .flip-clock-display {
-            background: #202020;
-            color: #ffffff !important;
-            border-radius: 12px;
-            padding: 0;
-            position: absolute;
-            top: 25%;
-            bottom: 10%;
-            left: 5%;
-            right: 5%;
-            width: auto;
-            height: auto;
+        /* 5. BLACK CARD INNER STYLING */
+        .card-top-label {
+            height: 25%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4), inset 0 2px 5px rgba(255, 255, 255, 0.1);
+            padding: 5px;
+        }
+
+        .card-pill {
+            border: 1px solid #FFD700;
+            border-radius: 4px;
+            padding: 3px 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            max-width: 95%; /* Keeps it from touching the edges */
+        }
+
+        .pill-label {
+            font-size: 5px;
+            color: #a0aec0;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            border-right: 1px solid rgba(255,255,255,0.2);
+            padding-right: 5px;
+            text-transform: uppercase;
+            text-align: right;
+            line-height: 1.2;
+        }
+
+        .pill-value {
+            font-size: 7px; /* Very small so full names fit */
+            color: #FFD700;
+            font-weight: bold;
+            text-transform: uppercase;
+            line-height: 1.2;
+            white-space: normal; /* Allows text to wrap to a second line if very long */
+            text-align: left;
+        }
+
+        .card-artwork {
+            flex-grow: 1;
+            background-size: contain; /* Prevents stretching, gives breathing room */
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 0 10px; /* The breathing room space */
+        }
+
+        .card-progress {
+            height: 15%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            padding-bottom: 5px;
+        }
+
+        /* 6. THE FLIP CLOCKS (White Cards) */
+        .card-white {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            align-items: center;
+        }
+
+        .time-label {
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            font-size: 14px;
+            color: #1a202c;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            height: 25%;
+            display: flex;
+            align-items: center;
+        }
+
+        .flip-clock-display {
+            background: #202020;
+            color: #ffffff;
+            border-radius: 8px;
+            position: relative;
+            width: 85%;
+            flex-grow: 1;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4), inset 0 2px 5px rgba(255, 255, 255, 0.1);
             font-family: 'Arial', sans-serif;
-            z-index: 2;
-            font-size: 7rem;
+            font-size: 3.5rem;
             letter-spacing: -2px;
             line-height: 1;
             font-weight: 700;
         }
 
-        /* The Split Line */
         .flip-clock-display::after {
             content: "";
             position: absolute;
             top: 50%;
             left: 0;
             width: 100%;
-            height: 3px;
+            height: 2px;
             background: #000;
             box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15);
             z-index: 3;
         }
+
+        /* 7. THE CLOCK (Protagonist Size) */
+        .astroclock-container {
+            width: 75vmin;  
+            height: 75vmin;
+            min-width: 300px;
+            min-height: 300px;
+            background-color: white;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        svg { width: 100%; height: 100%; }
+        .ring { fill: none; stroke: #333; stroke-width: 3; }
+        .divider { stroke: #666; stroke-width: 2; stroke-dasharray: 5, 5; }
+
+        /* RESPONSIVE STACKING */
+        @media (max-width: 1000px) {
+            .app-layout { flex-direction: column; }
+            .left-panel { order: 2; }
+            .astroclock-container { order: 1; width: 85vmin; height: 85vmin; margin-bottom: 30px; }
+        }
     </style>
 </head>
-
 <body>
-    <div id="stars"></div>
 
-    <div class="header">
-        <h1 class="title">CELESTIAL HOROLOGIUM</h1>
-        <p class="subtitle">Real-Time Ephemeris</p>
-        <p class="location">Constanza, RD (18.9N, 69.75W)</p>
+    <h1 class="dashboard-title">Beatles AstroClock</h1>
+
+    <div class="app-layout">
+        
+        <!-- LEFT DASHBOARD PANEL (Petit 1-2-2 Grid) -->
+        <div class="left-panel">
+            
+            <!-- Row 1: SONG (Centered Pyramid Tip) -->
+            <div class="card-row-center">
+                <div class="card-petit">
+                    <div class="card-top-label">
+                        <div class="card-pill">
+                            <div class="pill-label">NOW<br>PLAYING</div>
+                            <div class="pill-value" id="ui-song">Calculating...</div>
+                        </div>
+                    </div>
+                    <div class="card-artwork" id="art-song" style="background-image: url('assets/decan_1.png');"></div>
+                    <div class="card-progress" id="bar-song"></div>
+                </div>
+            </div>
+
+            <!-- Row 2: MINUTES & SECONDS (Split Base) -->
+            <div class="card-row-split">
+                <div class="card-petit card-white">
+                    <div class="time-label">MINUTES</div>
+                    <div class="flip-clock-display" id="ui-min">--</div>
+                </div>
+                <div class="card-petit card-white">
+                    <div class="time-label">SECONDS</div>
+                    <div class="flip-clock-display" id="ui-sec">--</div>
+                </div>
+            </div>
+
+            <!-- Row 3: ALBUM & MOVIE (Split Base) -->
+            <div class="card-row-split">
+                <div class="card-petit">
+                    <div class="card-top-label">
+                        <div class="card-pill">
+                            <div class="pill-label">HOUR</div>
+                            <div class="pill-value" id="ui-album">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="card-artwork" id="art-album" style="background-image: url('assets/cover_aries.jpg');"></div>
+                    <div class="card-progress" id="bar-album"></div>
+                </div>
+                <div class="card-petit">
+                    <div class="card-top-label">
+                        <div class="card-pill">
+                            <div class="pill-label">5 MOMENTS<br>OF THE DAY</div>
+                            <div class="pill-value" id="ui-movie">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="card-artwork" id="art-movie" style="background-image: url('assets/Matutina.png');"></div>
+                    <div class="card-progress" id="bar-movie"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ASTROCLOCK -->
+        <div class="astroclock-container">
+            <svg viewBox="-500 -500 1000 1000" xmlns="http://www.w3.org/2000/svg">
+                <g id="background-layer">
+                    <image id="main-background" href="assets/beatles-calendar.svg" x="-841" y="-851" width="1700" height="1700" />
+                </g>
+                <circle class="ring" cx="0" cy="0" r="480" stroke-width="5" />
+                <circle class="ring" cx="0" cy="0" r="380" />
+                <circle class="ring" cx="0" cy="0" r="280" />
+                <circle class="ring" cx="0" cy="0" r="180" />
+                <circle class="ring" cx="0" cy="0" r="80" /> 
+                <g id="dividers">
+                    <line class="divider" x1="0" y1="-480" x2="0" y2="480" transform="rotate(0)" />
+                    <line class="divider" x1="0" y1="-480" x2="0" y2="480" transform="rotate(30)" />
+                    <line class="divider" x1="0" y1="-480" x2="0" y2="480" transform="rotate(60)" />
+                    <line class="divider" x1="0" y1="-480" x2="0" y2="480" transform="rotate(90)" />
+                    <line class="divider" x1="0" y1="-480" x2="0" y2="480" transform="rotate(120)" />
+                    <line class="divider" x1="0" y1="-480" x2="0" y2="480" transform="rotate(150)" />
+                </g>
+                <g id="planets-layer">
+                    <image id="billy-sun" href="assets/billy-shears.svg" x="0" y="0" width="50" height="50" />
+                    <image id="madonna-moon" href="assets/lady-madonna.svg" x="0" y="0" width="50" height="50" />
+                    <image id="michell-mercury" href="assets/michell.svg" x="0" y="0" width="50" height="50" />
+                    <image id="sadie-venus" href="assets/sexy-sadie.svg" x="0" y="0" width="50" height="50" />
+                    <image id="pepper-mars" href="assets/sgt-pepper.svg" x="0" y="0" width="50" height="50" />
+                    <image id="merigold-jupiter" href="assets/king-merigold.svg" x="0" y="0" width="50" height="50" />
+                    <image id="mckenzie-saturn" href="assets/father-mckenzie.svg" x="0" y="0" width="50" height="50" />
+                    <image id="ascendant" href="assets/ascendant.svg" x="0" y="0" width="80" height="80" />
+                </g>
+            </svg>
+        </div>
+
     </div>
 
-    <!-- The Main Container -->
-    <div class="grid-container" id="mainContainer"></div>
-
-    <div class="footer" id="footer">Loading Engine...</div>
+    <!-- WHERE ARE THEY NOW? -->
+    <div class="ephemeris-panel">
+        <p class="dashboard-subtitle">What Are They Playing?</p>
+        <div class="ephemeris-row">
+            <button class="ephemeris-btn" id="select-sun" data-planet="sun" style="background-image: url('assets/billy-shears.svg');"></button>
+            <button class="ephemeris-btn" id="select-moon" data-planet="moon" style="background-image: url('assets/lady-madonna.svg');"></button>
+            <button class="ephemeris-btn" id="select-mercury" data-planet="mercury" style="background-image: url('assets/michell.svg');"></button>
+            <button class="ephemeris-btn" id="select-venus" data-planet="venus" style="background-image: url('assets/sexy-sadie.svg');"></button>
+            <button class="ephemeris-btn" id="select-mars" data-planet="mars" style="background-image: url('assets/sgt-pepper.svg');"></button>
+            <button class="ephemeris-btn" id="select-jupiter" data-planet="jupiter" style="background-image: url('assets/king-merigold.svg');"></button>
+            <button class="ephemeris-btn" id="select-saturn" data-planet="saturn" style="background-image: url('assets/father-mckenzie.svg');"></button>
+        </div>
+        <div class="card-row-center">
+            <div class="eph-card-wrapper" id="eph-card-wrapper">
+                <div class="card-petit" id="eph-card">
+                    <div class="card-top-label">
+                        <div class="card-pill">
+                            <div class="pill-label">NOW<br>PLAYING</div>
+                            <div class="pill-value" id="ui-eph-song"></div>
+                        </div>
+                    </div>
+                    <div class="card-artwork" id="art-eph-song"></div>
+                    <div class="card-progress" id="bar-eph-song"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        /**
-         * REFERENCE DOCUMENT 3 - Complete Working State with 5 Moments & Documentation
-         * Optimized Script Structure - DATE: 2026-02-04
-         */
-
-        // ============================================================================
-        // SECTION 1: LOOK & FEEL (Fonts, Colors, Dimensions, Sign Placement)
-        // ============================================================================
-        /* 
-        ============================================================================
-        DESIGN SPECIFICATIONS: VISUAL COMPOSITION & DIMENSIONS
-        ============================================================================
-        1. CARD GEOMETRY & SPACING:
-           - Aspect Ratio: 4:5 (Standardized for all cards to ensure uniform grid alignment).
-           - Corner Radius: 12px (Smooth rounding for a premium 'app' feel).
-           - Card Padding: 1.5rem (24px internal safety zone for all elements).
-           - Outer Gaps: 2rem (32px) between horizontal rows, 1.5rem (24px) between cards.
-
-        2. TYPOGRAPHY HIERARCHY:
-           - Global Monospace: 'Courier New', monospace (For data values and precision).
-           - Flip-Clock Font: 'Arial', sans-serif (7rem, Bold, -2px tracking for weight).
-           - Labels/Titles: 11px, uppercase, 0.12em letter-spacing (Bold 800).
-
-        3. COMPOSITION (Rule of Thirds):
-           - Header Zone (Top 18%): Ascendant cards feature tactical badges (framed yellow borders) within the white header band.
-           - Planet Cards: Maintain floating badge architecture for albums; no dedicated header bands for character/degree cards.
-           - Center/Main Zone (Middle 67%): Large digits or Asset/Poster backgrounds.
-           - Footer Zone (Bottom 15%): Glassmorphism Layer with Energy/Progress bars.
-
-        4. "BLACK SPACES" & CONTRAST:
-           - Positive/White Space: Used in Degree cards to emphasize "Data".
-           - Focused Black Spaces: Backgrounds for Asset cards create a "Stage" effect.
-           - Contrast Accent: Yellow (#FFD700) and Indigo (#4f46e5) eye-tracking paths.
-        ============================================================================
-        */
-        const SIGN_DATES = {
-            'Aries': 'Mar 21 - Apr 19', 'Taurus': 'Apr 20 - May 20', 'Gemini': 'May 21 - Jun 20',
-            'Cancer': 'Jun 21 - Jul 22', 'Leo': 'Jul 23 - Aug 22', 'Virgo': 'Aug 23 - Sep 22',
-            'Libra': 'Sep 23 - Oct 22', 'Scorpio': 'Oct 23 - Nov 21', 'Sagittarius': 'Nov 22 - Dec 21',
-            'Capricorn': 'Dec 22 - Jan 19', 'Aquarius': 'Jan 20 - Feb 18', 'Pisces': 'Feb 19 - Mar 20'
-        };
-
-        const ALBUM_NAMES = {
-            'Aquarius': 'Abbey Road', 'Aries': 'Please Please Me', 'Cancer': 'Beatles For Sale',
-            'Capricorn': 'The White Album', 'Gemini': 'A Hard Day\'s Night', 'Leo': 'Help!',
-            'Libra': 'Revolver', 'Pisces': 'Let It Be', 'Sagittarius': 'Magical Mystery Tour',
-            'Scorpio': 'Sgt. Pepper\'s', 'Taurus': 'With The Beatles', 'Virgo': 'Rubber Soul'
-        };
-
-        const CHARACTER_NAMES = {
-            'Mars': 'Sgt. Pepper', 'Sun': 'Billy Shears', 'Venus': 'Sexy Sadie',
-            'Mercury': 'Michelle', 'Moon': 'Lady Madonna', 'Saturn': 'Father McKenzie',
-            'Jupiter': 'King MG'
-        };
-
-        // ============================================================================
-        // SECTION 2: ASSET & UI LOGIC (Image Folders, FlipClock Logic, Placement)
-        // ============================================================================
-        const MOMENT_NAMES = ['Matutina', 'Meridiana', 'Vespera', 'Nocturna', 'Aurora'];
-        const MOMENT_IMAGES = {
-            'Matutina': 'assets/Matutina.png', 'Meridiana': 'assets/Meridiana.png',
-            'Vespera': 'assets/Vespera.png', 'Nocturna': 'assets/Nocturna.png',
-            'Aurora': 'assets/Aurora.png'
-        };
-
-        const ZODIAC_TRACKS = {
-            "Aries": ["Twist And Shout", "Please Please Me", "I Saw Her Standing There"],
-            "Taurus": ["Please Mr. Postman", "Till There Was You", "Money"],
-            "Gemini": ["I'm So Happy Just To Dance With You", "Can't Buy Me Love", "If I Fell"],
-            "Cancer": ["Eight Days A Week", "I'll Follow The Sun", "Mr. Moonlight"],
-            "Leo": ["Help", "I've Just Seen A Face", "Act Naturally"],
-            "Virgo": ["I'm Looking Through You", "The Word", "Think For Yourself"],
-            "Libra": ["I'm Only Sleeping", "Got To Get You Into My Life", "Tomorrow Never Knows"],
-            "Scorpio": ["Within You, Without You", "Getting Better", "With A Little Help From My Friends"],
-            "Sagittarius": ["All You Need Is Love", "The Magical Mystery Tour", "Baby, You Are a Rich Man"],
-            "Capricorn": ["Dear Prudence", "Blackbird", "While My Guitar Gently Weeps"],
-            "Aquarius": ["Come Together", "The End", "Because"],
-            "Pisces": ["Let It Be", "Across The Universe", "I Got A Feeling"]
-        };
-
-        const BACKGROUNDS = {
-            'Aquarius': 'assets/cover_aquarius.jpg', 'Aries': 'assets/cover_aries.jpg',
-            'Cancer': 'assets/cover_cancer.png', 'Capricorn': 'assets/cover_capricorn.png',
-            'Gemini': 'assets/cover_gemini.jpg', 'Leo': 'assets/cover_leo.png',
-            'Libra': 'assets/cover_libra.png', 'Pisces': 'assets/cover_pisces.jpg',
-            'Sagittarius': 'assets/cover_sagittarius.jpg', 'Scorpio': 'assets/cover_scorpio.jpg',
-            'Taurus': 'assets/cover_taurus.png', 'Virgo': 'assets/cover_virgo.jpg'
-        };
-
-        const SIGN_ICONS = {
-            'Aries': 'assets/sign_aries.png', 'Taurus': 'assets/sign_taurus.png',
-            'Gemini': 'assets/sign_gemini.png', 'Cancer': 'assets/sign_cancer.png',
-            'Leo': 'assets/sign_leo.png', 'Virgo': 'assets/sign_virgo.png',
-            'Libra': 'assets/sign_libra.png', 'Scorpio': 'assets/sign_scorpio.png',
-            'Sagittarius': 'assets/sign_sagittarius.png', 'Capricorn': 'assets/sign_capricorn.png',
-            'Aquarius': 'assets/sign_aquarius.png', 'Pisces': 'assets/sign_pisces.png'
-        };
-
-        const CHARACTERS = {
-            'Jupiter': 'assets/character_jupiter.png', 'Mars': 'assets/character_mars.png',
-            'Mercury': 'assets/character_mercury.png', 'Moon': 'assets/character_moon.png',
-            'Saturn': 'assets/character_saturn.png', 'Sun': 'assets/character_sun.png',
-            'Venus': 'assets/character_venus.png'
-        };
-
-        function getCardStyle(signName) {
-            if (BACKGROUNDS[signName]) {
-                return `style="background-image: url('${BACKGROUNDS[signName]}'); background-position: bottom center; background-size: contain; background-repeat: no-repeat;" class="flip-card"`;
-            }
-            return `class="flip-card"`;
+        function placeItemOnRing(elementId, degrees, ringRadius) {
+            const mathDegrees = degrees + 180;
+            const radians = mathDegrees * (Math.PI / 180);
+            const x = ringRadius * Math.cos(radians);
+            const y = -(ringRadius * Math.sin(radians));
+            const element = document.getElementById(elementId);
+            const width = parseFloat(element.getAttribute('width'));
+            const imageOffset = width / 2; 
+            element.setAttribute('x', x - imageOffset);
+            element.setAttribute('y', y - imageOffset);
         }
 
-        function getCharacterStyle(id) {
-            if (CHARACTERS[id]) {
-                return `style = "background: white url('${CHARACTERS[id]}') center center / contain no-repeat;" class="flip-card"`;
-            }
-            return `class="flip-card"`;
-        }
-
-        function getDecanNumber(longitude) {
-            return Math.floor(longitude / 10) + 1;
-        }
-
-        function updateElement(id, text) {
-            const el = document.getElementById(id);
-            if (el && el.textContent !== text) {
-                el.textContent = text;
-            }
-        }
-
-        function updatePlanet(name, degree) {
-            const el = document.querySelector(`#card-${name}-deg .asc-value`);
-            if (el) el.textContent = `${String(degree).padStart(2, '0')}°`;
-        }
-
-        // ============================================================================
-        // SECTION 3: CORE LOGIC & MATH (Planet Math, Ascendant, VSOP87 Engine)
-        // ============================================================================
         const Astro = {
             RAD: Math.PI / 180, DEG: 180 / Math.PI,
             norm: (a) => { a %= 360; return a < 0 ? a + 360 : a; },
@@ -462,37 +419,48 @@
             Saturn: { L: [49.944, 1222.113], a: 9.554, e: 0.0555, p: 92.43, symbol: '♄' }
         };
 
-        const ZODIAC_SIGNS = [
-            { name: 'Aries', symbol: '♈', start: 0 }, { name: 'Taurus', symbol: '♉', start: 30 },
-            { name: 'Gemini', symbol: '♊', start: 60 }, { name: 'Cancer', symbol: '♋', start: 90 },
-            { name: 'Leo', symbol: '♌', start: 120 }, { name: 'Virgo', symbol: '♍', start: 150 },
-            { name: 'Libra', symbol: '♎', start: 180 }, { name: 'Scorpio', symbol: '♏', start: 210 },
-            { name: 'Sagittarius', symbol: '♐', start: 240 }, { name: 'Capricorn', symbol: '♑', start: 270 },
-            { name: 'Aquarius', symbol: '♒', start: 300 }, { name: 'Pisces', symbol: '♓', start: 330 }
-        ];
+        const OBSERVER_LAT = 18.9;
+        const OBSERVER_LON = -69.75;
 
-        const OBSERVER_LAT = 18.9; const OBSERVER_LON = -69.75;
+        const ZODIAC_NAMES = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 
-        function getCurrentMoment(ascendantDegree) {
-            const decanNumber = Math.floor(ascendantDegree / 10) + 1;
-            const momentIndex = Math.floor((decanNumber - 1) / 7);
-            if (momentIndex >= 5) return { name: 'Matutina', number: 1 };
-            return { name: MOMENT_NAMES[momentIndex], number: momentIndex + 1 };
-        }
+        const ALBUM_NAMES = {
+            'Aquarius': 'Abbey Road', 'Aries': 'Please Please Me', 'Cancer': 'Beatles For Sale',
+            'Capricorn': 'The White Album', 'Gemini': 'A Hard Day\'s Night', 'Leo': 'Help!',
+            'Libra': 'Revolver', 'Pisces': 'Let It Be', 'Sagittarius': 'Magical Mystery Tour',
+            'Scorpio': 'Sgt. Pepper\'s', 'Taurus': 'With The Beatles', 'Virgo': 'Rubber Soul'
+        };
 
-        function getZodiacSign(deg) {
-            let longitude = deg % 360; if (longitude < 0) longitude += 360;
-            for (let i = ZODIAC_SIGNS.length - 1; i >= 0; i--) {
-                if (longitude >= ZODIAC_SIGNS[i].start) {
-                    const decimalDeg = longitude - ZODIAC_SIGNS[i].start;
-                    const d = Math.floor(decimalDeg);
-                    const m = Math.floor((decimalDeg - d) * 60);
-                    const s = Math.floor(((decimalDeg - d) * 60 - m) * 60);
-                    return { ...ZODIAC_SIGNS[i], degree: d, min: m, sec: s };
-                }
-            }
-            return { ...ZODIAC_SIGNS[0], degree: 0, min: 0, sec: 0 };
-        }
+        const BACKGROUNDS = {
+            'Aquarius': 'assets/cover_aquarius.jpg', 'Aries': 'assets/cover_aries.jpg',
+            'Cancer': 'assets/cover_cancer.png', 'Capricorn': 'assets/cover_capricorn.png',
+            'Gemini': 'assets/cover_gemini.jpg', 'Leo': 'assets/cover_leo.png',
+            'Libra': 'assets/cover_libra.png', 'Pisces': 'assets/cover_pisces.jpg',
+            'Sagittarius': 'assets/cover_sagittarius.jpg', 'Scorpio': 'assets/cover_scorpio.jpg',
+            'Taurus': 'assets/cover_taurus.png', 'Virgo': 'assets/cover_virgo.jpg'
+        };
+
+        const ZODIAC_TRACKS = {
+            "Aries": ["Twist And Shout", "Please Please Me", "I Saw Her Standing There"],
+            "Taurus": ["Please Mr. Postman", "Till There Was You", "Money"],
+            "Gemini": ["I'm So Happy Just To Dance With You", "Can't Buy Me Love", "If I Fell"],
+            "Cancer": ["Eight Days A Week", "I'll Follow The Sun", "Mr. Moonlight"],
+            "Leo": ["Help", "I've Just Seen A Face", "Act Naturally"],
+            "Virgo": ["I'm Looking Through You", "The Word", "Think For Yourself"],
+            "Libra": ["I'm Only Sleeping", "Got To Get You Into My Life", "Tomorrow Never Knows"],
+            "Scorpio": ["Within You, Without You", "Getting Better", "With A Little Help From My Friends"],
+            "Sagittarius": ["All You Need Is Love", "The Magical Mystery Tour", "Baby, You Are a Rich Man"],
+            "Capricorn": ["Dear Prudence", "Blackbird", "While My Guitar Gently Weeps"],
+            "Aquarius": ["Come Together", "The End", "Because"],
+            "Pisces": ["Let It Be", "Across The Universe", "I Got A Feeling"]
+        };
+
+        const MOMENT_NAMES = ['Matutina', 'Meridiana', 'Vespera', 'Nocturna', 'Aurora'];
+        const MOMENT_IMAGES = {
+            'Matutina': 'assets/Matutina.png', 'Meridiana': 'assets/Meridiana.png',
+            'Vespera': 'assets/Vespera.png', 'Nocturna': 'assets/Nocturna.png',
+            'Aurora': 'assets/Aurora.png'
+        };
 
         function calculateGeocentric(id, T, earth) {
             const p = PLANET_DATA[id];
@@ -520,35 +488,63 @@
             return Astro.norm(Math.atan2(num, den) * Astro.DEG);
         }
 
+        // A "minute" is one whole degree within the sign (0-29).
+        // A "second" is 1/30th of that degree (0-29).
+        // 1 minute ~= 4 real minutes, 1 second ~= 8 real seconds.
+        function getMinuteSecond(longitude) {
+            const normalized = ((longitude % 360) + 360) % 360;
+            const positionInSign = normalized % 30;
+            const minute = Math.floor(positionInSign);
+            const fraction = positionInSign - minute;
+            const second = Math.floor(fraction * 30);
+            return { minute, second };
+        }
+
+        function getZodiacSign(deg) {
+            let longitude = deg % 360;
+            if (longitude < 0) longitude += 360;
+            return ZODIAC_NAMES[Math.floor(longitude / 30)];
+        }
+
         function getDecanNumber(deg) {
             let d = deg % 360;
             if (d < 0) d += 360;
             return Math.floor(d / 10) + 1;
         }
 
+        // Each of the 5 moments/films spans exactly 72deg (5 x 72 = 360).
+        const MOMENT_SPAN = 72;
+
+        function getCurrentMoment(ascendantDegree) {
+            let d = ascendantDegree % 360;
+            if (d < 0) d += 360;
+            const momentIndex = Math.min(4, Math.floor(d / MOMENT_SPAN));
+            return MOMENT_NAMES[momentIndex];
+        }
+
+        // --- ENERGY BAR FUNCTIONS IMPORTED FROM INDEX_2.HTML ---
         function getDecanProgress(degree) {
             const decanDegree = degree % 10; let bars = '';
             for (let i = 0; i < 10; i++) {
                 const filled = i < decanDegree;
                 const barStyle = filled ? 'background: #4f46e5; box-shadow: 0 0 4px rgba(79, 70, 229, 0.5);' : 'background: #e2e8f0;';
-                bars += `<div style="flex: 1; height: 100%; border-radius: 3px; ${barStyle}"></div>`;
+                bars += `<div style="flex: 1; height: 100%; border-radius: 2px; ${barStyle}"></div>`;
             }
-            return bars;
+            return `<div style="display: flex; gap: 2px; width: 60%; height: 6px;">${bars}</div>`;
         }
 
         function getMomentProgress(ascendantDegree) {
-            const decanNumber = Math.floor(ascendantDegree / 10) + 1; // 1 to 36
-            // Each moment spans 7.2 degrees if perfectly divided, but here we use 7 decans (70 deg) per moment.
-            // Aurora (the 5th) handles the remainder. 
-            // We want to show which of the 7 decans within the moment we are in.
-            const filledBars = ((decanNumber - 1) % 7) + 1;
+            let d = ascendantDegree % 360;
+            if (d < 0) d += 360;
+            const offsetInMoment = d % MOMENT_SPAN;
+            const filledBars = Math.min(7, Math.floor((offsetInMoment / MOMENT_SPAN) * 7) + 1);
             let bars = '';
             for (let i = 0; i < 7; i++) {
                 const filled = i < filledBars;
                 const barStyle = filled ? 'background: #4f46e5; box-shadow: 0 0 4px rgba(79, 70, 229, 0.5);' : 'background: #e2e8f0;';
-                bars += `<div style="flex: 1; height: 100%; border-radius: 3px; ${barStyle}"></div>`;
+                bars += `<div style="flex: 1; height: 100%; border-radius: 2px; ${barStyle}"></div>`;
             }
-            return bars;
+            return `<div style="display: flex; gap: 2px; width: 50%; height: 6px;">${bars}</div>`;
         }
 
         function getSignProgress(degree) {
@@ -556,221 +552,108 @@
             for (let i = 0; i < 10; i++) {
                 const filled = i < filledBars;
                 const barStyle = filled ? 'background: #4f46e5; box-shadow: 0 0 4px rgba(79, 70, 229, 0.5);' : 'background: #e2e8f0;';
-                bars += `<div style="flex: 1; height: 100%; border-radius: 3px; ${barStyle}"></div>`;
+                bars += `<div style="flex: 1; height: 100%; border-radius: 2px; ${barStyle}"></div>`;
             }
-            return bars;
+            return `<div style="display: flex; gap: 2px; width: 60%; height: 6px;">${bars}</div>`;
         }
 
-        // ============================================================================
-        // SECTION 4: CARD ARCHITECTURE (Layout Templates & Components)
-        // ============================================================================
-        function renderAscendantRow(zodiac, sign, d, m, s, longitude) {
-            const whiteCardClass = 'class="flip-card degree-card"';
-            const hourCardStyle = BACKGROUNDS[sign] ?
-                `style="background: #000; position: relative; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 1rem 1.5rem 1rem;" class="flip-card"` :
-                'class="flip-card" style="background: #000;"';
+        // "Where Are They Now?" panel state
+        let selectedPlanet = null;
+        let lastPlanetLongitudes = {};
 
-            const moment = getCurrentMoment(longitude);
-            const momentImage = MOMENT_IMAGES[moment.name];
-            const albumName = ALBUM_NAMES[sign] || sign;
-
-            const hourCardContent = `
-                <div style="background: #000; width: 100%; border-radius: 12px 12px 0 0; position: absolute; top: 0; left: 0; height: 18%; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                    <div style="border: 1.5px solid #FFD700; border-radius: 6px; padding: 3.5px; display: flex; align-items: center; gap: 8px; min-height: 36px; max-width: 100%;">
-                        <div style="font-size: 8px; color: #a0aec0; font-weight: 800; letter-spacing: 0.5px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 8px; line-height: 1.2; text-align: right; min-width: max-content; display: flex; align-items: center; min-height: 24px;">HOUR</div>
-                        <div class="asc-title" style="color: #FFD700; font-size: 11px; line-height: 1.3; white-space: nowrap;">${albumName.toUpperCase()}</div>
-                    </div>
-                </div>
-                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.6); padding: 0.5rem 0.75rem; border-radius: 0 0 12px 12px; display: flex; align-items: center; justify-content: center; z-index: 3;">
-                    <div id="bar-asc-hour" style="display: flex; gap: 2px; width: 70%; max-width: 90px; height: 20px;">${getSignProgress(d)}</div>
-                </div>
-                <div id="asc-cover-bg" style="position: absolute; top: 18%; bottom: 15%; left: 0; width: 100%; height: auto; background-image: url('${BACKGROUNDS[sign]}'); background-position: center center; background-size: contain; background-repeat: no-repeat; z-index: 0;"></div>
-                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1;">
-                    <img id="asc-center-icon" src="${SIGN_ICONS[sign]}" style="width: 70px; height: 70px; filter: brightness(0) invert(1) drop-shadow(0 4px 12px rgba(0,0,0,0.7)); opacity: 0.8;" />
-                </div>
-            `;
-
-            const momentCardContent = `
-                <div style="background: #000; width: 100%; border-radius: 12px 12px 0 0; position: absolute; top: 0; left: 0; height: 18%; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                    <div style="border: 1.5px solid #FFD700; border-radius: 6px; padding: 3.5px; display: flex; align-items: center; gap: 8px; min-height: 36px; max-width: 100%;">
-                        <div style="font-size: 8px; color: #a0aec0; font-weight: 800; letter-spacing: 0.5px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 8px; line-height: 1.2; text-align: right; min-width: max-content;">5 MOMENTS<br>OF THE DAY</div>
-                        <div class="asc-title" style="color: #FFD700; font-size: 11px; line-height: 1.3; white-space: nowrap;">${moment.name.toUpperCase()}</div>
-                    </div>
-                </div>
-                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.6); padding: 0.5rem 0.75rem; border-radius: 0 0 12px 12px; display: flex; align-items: center; justify-content: center; z-index: 3;">
-                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.6); padding: 0.5rem 0.75rem; border-radius: 0 0 12px 12px; display: flex; align-items: center; justify-content: center; z-index: 3;">
-                    <div id="bar-asc-moment" style="display: flex; gap: 2px; width: 70%; max-width: 90px; height: 20px;">${getMomentProgress(longitude)}</div>
-                </div>
-                </div>
-                <div id="moment-poster-bg" style="position: absolute; top: 18%; bottom: 15%; left: 0; width: 100%; height: auto; background-image: url('${momentImage}'); background-position: center center; background-size: contain; background-repeat: no-repeat; z-index: 0;"></div>
-            `;
-
-            // Calculate song for Ascendant
-            const ascDecanNumber = Math.floor(d / 10) + 1;
-            const ascSignTracks = ZODIAC_TRACKS[sign] || [];
-            const ascSongName = ascSignTracks[ascDecanNumber - 1] || "Unknown Song";
-
-            const decanCardContent = `
-                <div style="background: #000; width: 100%; border-radius: 12px 12px 0 0; position: absolute; top: 0; left: 0; height: 18%; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                    <div style="border: 1.5px solid #FFD700; border-radius: 6px; padding: 3.5px; display: flex; align-items: center; gap: 8px; min-height: 38px; max-width: 100%;">
-                        <div style="font-size: 8px; color: #a0aec0; font-weight: 800; letter-spacing: 0.5px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 8px; line-height: 1.2; text-align: right; min-width: max-content;">NOW<br>PLAYING</div>
-                        <div class="asc-title" style="color: #FFD700; font-size: 11px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1;">${ascSongName.toUpperCase()}</div>
-                    </div>
-                </div>
-                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.6); padding: 0.5rem 0.75rem; border-radius: 0 0 12px 12px; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                    <div style="display: flex; gap: 2px; width: 70%; max-width: 90px; height: 20px;">${getDecanProgress(d)}</div>
-                </div>
-            `;
-
-            return `
-            <div class="asc-row">
-                <div class="flip-card decan-card" id="card-asc-deg" style="background: #000 url('assets/decan_${getDecanNumber(longitude)}.png') center center / contain no-repeat; position: relative;">${decanCardContent}</div>
-                <div class="flip-card" id="card-asc-moment" style="background: #000; position: relative;">${momentCardContent}</div>
-                <div ${hourCardStyle} style="background: #000; border: 1px solid #333;">${hourCardContent}</div>
-                <div class="flip-card degree-card" style="background: #fff; position: relative;">
-                    <div style="background: #fff; width: 100%; border-radius: 12px 12px 0 0; position: absolute; top: 0; left: 0; height: 18%; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                        <div style="font-family: 'Impact', 'Arial Black', sans-serif; font-size: 24px; color: #1a202c; letter-spacing: 2px; text-transform: uppercase;">MINUTES</div>
-                    </div>
-                    <div class="asc-value flip-clock-display" id="val-asc-min">${String(d).padStart(2, '0')}</div>
-                </div>
-                <div class="flip-card degree-card" style="background: #fff; position: relative;">
-                    <div style="background: #fff; width: 100%; border-radius: 12px 12px 0 0; position: absolute; top: 0; left: 0; height: 18%; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                        <div style="font-family: 'Impact', 'Arial Black', sans-serif; font-size: 24px; color: #1a202c; letter-spacing: 2px; text-transform: uppercase;">SECONDS</div>
-                    </div>
-                    <div class="asc-value flip-clock-display" id="val-asc-sec">${String(s).padStart(2, '0')}</div>
-                </div>
-            </div>`;
-        }
-
-        function createPlanetRow(name, symbol, zSymbol, zName, degree, longitude) {
-            const charCardAttr = getCharacterStyle(name);
-            const albumName = ALBUM_NAMES[zName] || zName;
-            const decanNumber = Math.floor(degree / 10) + 1;
-
-            // Map song directly from the sign (album) and decan
-            const signTracks = ZODIAC_TRACKS[zName] || [];
-            const songName = signTracks[decanNumber - 1] || "Unknown Song";
-
-            // Shared Badge Style for visual anchor consistency
-            const badgeStyle = "position: absolute; top: 7%; left: 50%; transform: translateX(-50%); text-align: center; z-index: 3; border: 2px solid #FFD700; padding: 4px 12px; border-radius: 6px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); white-space: nowrap; min-height: 38px; display: flex; align-items: center; justify-content: center;";
-
-            return `
-                <div class="planet-row">
-                <div ${charCardAttr} style="position: relative;">
-                    <div class="asc-icon" style="margin: auto; height: 100%; display: flex; align-items: center; justify-content: center;">${symbol}</div>
-                    <div style="position: absolute; bottom: 1.5rem; left: 50%; transform: translateX(-50%); display: flex; gap: 2px; width: 70%; max-width: 90px; height: 20px;">${getDecanProgress(degree)}</div>
-                </div>
-                <div class="flip-card" style="background: #000; position: relative; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 1rem 1.5rem 1rem;">
-                    <div style="${badgeStyle}">
-                        <div style="display: flex; gap: 0.75rem; align-items: center;">
-                            <div style="font-size: 8px; color: #a0aec0; font-weight: 800; letter-spacing: 1px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 10px;">ALBUM</div>
-                            <div style="text-align: left;">
-                                <div style="font-size: 1rem; font-weight: 700; color: #fff; line-height: 1.1;">${albumName}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="planet-poster-${name}" style="position: absolute; top: 0; bottom: 0; left: 0; width: 100%; height: auto; background-image: url('${BACKGROUNDS[zName]}'); background-position: center center; background-size: contain; background-repeat: no-repeat; z-index: 0;"></div>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1;"><img src="${SIGN_ICONS[zName]}" style="width: 80px; height: 80px; filter: brightness(0) invert(1) opacity(0.7);" /></div>
-                </div>
-                <div class="flip-card decan-card" id="card-${name}-deg" style="background: white url('assets/decan_${getDecanNumber(longitude)}.png') center center / contain no-repeat; position: relative;">
-                    <div style="${badgeStyle}">
-                        <div style="display: flex; gap: 0.75rem; align-items: center;">
-                            <div style="font-size: 8px; color: #a0aec0; font-weight: 800; letter-spacing: 1px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 10px;">SONG</div>
-                            <div style="text-align: left;">
-                                <div style="font-size: 1rem; font-weight: 700; color: #fff; line-height: 1.1;">${songName.toUpperCase()}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.9); padding: 0 1.5rem; display: flex; align-items: center; justify-content: flex-end; border-radius: 0 0 12px 12px; height: 2.25rem; z-index: 5;">
-                        <div class="asc-value" style="font-size: 18px; color: #000; font-weight: 800; letter-spacing: 1px;">${String(degree).padStart(2, '0')}°</div>
-                    </div>
-                </div>
-            </div>`;
-        }
-
-        // ============================================================================
-        // INITIALIZATION & MAIN LOOP
-        // ============================================================================
-        const PLANET_IDS = ['Moon', 'Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
-
-        function calculatePositions() {
-            const now = new Date(); const jd = Astro.getJD(now); const T = Astro.getT(jd);
-            const mainContainer = document.getElementById('mainContainer');
-            const sunLon = Astro.norm(PLANET_DATA.Sun.L[0] + PLANET_DATA.Sun.L[1] * T);
-            const earth = { r: 1.0, lon: Astro.norm(sunLon + 180) };
-            const ascAngle = calculateAscendant(jd, T); const ascZ = getZodiacSign(ascAngle);
-            const ascFract = ascAngle - Math.floor(ascAngle);
-            ascZ.sec = Math.floor((ascFract * 240) % 60);
-
-            if (mainContainer.innerHTML === '') {
-                let html = renderAscendantRow(ascZ.symbol, ascZ.name, ascZ.degree, ascZ.min, ascZ.sec, ascAngle);
-                PLANET_IDS.forEach(id => {
-                    let lon = (id === 'Sun') ? sunLon : (id === 'Moon' ? Astro.norm(PLANET_DATA.Moon.L[0] + PLANET_DATA.Moon.L[1] * T + 6.29 * Math.sin((134.96 + 477198.86 * T) * Astro.RAD)) : calculateGeocentric(id, T, earth));
-                    const z = getZodiacSign(lon); html += createPlanetRow(id, PLANET_DATA[id].symbol, z.symbol, z.name, z.degree, lon);
-                });
-                mainContainer.innerHTML = html;
+        function renderEphemeris() {
+            const wrapperEl = document.getElementById('eph-card-wrapper');
+            const titleEl = document.getElementById('ui-eph-song');
+            const artEl = document.getElementById('art-eph-song');
+            const barEl = document.getElementById('bar-eph-song');
+            if (!selectedPlanet || !(selectedPlanet in lastPlanetLongitudes)) {
+                wrapperEl.style.display = 'none';
                 return;
             }
+            wrapperEl.style.display = 'block';
+            const lon = lastPlanetLongitudes[selectedPlanet];
+            const sign = getZodiacSign(lon);
+            const ms = getMinuteSecond(lon);
+            const decanInSign = Math.floor(ms.minute / 10);
+            const songName = (ZODIAC_TRACKS[sign] || [])[decanInSign] || 'Unknown Song';
+            titleEl.textContent = songName;
+            artEl.style.backgroundImage = `url('assets/decan_${getDecanNumber(lon)}.png')`;
+            barEl.innerHTML = getDecanProgress(ms.minute);
+        }
 
-            // Updates
-            const elCoverBg = document.getElementById('asc-cover-bg'); const elCenterIcon = document.getElementById('asc-center-icon');
-            if (elCoverBg && elCenterIcon && elCenterIcon.src.indexOf(SIGN_ICONS[ascZ.name]) === -1) {
-                elCoverBg.style.backgroundImage = `url('${BACKGROUNDS[ascZ.name]}')`; elCenterIcon.src = SIGN_ICONS[ascZ.name];
-            }
-            const moment = getCurrentMoment(ascAngle); const elMomentBg = document.getElementById('moment-poster-bg');
-            const elMomentTitle = document.querySelector('#card-asc-moment .asc-title');
-            if (elMomentBg && elMomentTitle && elMomentBg.style.backgroundImage.indexOf(MOMENT_IMAGES[moment.name]) === -1) {
-                elMomentBg.style.backgroundImage = `url('${MOMENT_IMAGES[moment.name]}')`; elMomentTitle.textContent = moment.name.toUpperCase();
-            }
-
-            // Update Ascendant Song
-            const ascDecanNumber = Math.floor(ascZ.degree / 10) + 1;
-            const ascSignTracks = ZODIAC_TRACKS[ascZ.name] || [];
-            const ascSongName = ascSignTracks[ascDecanNumber - 1] || "Unknown Song";
-            const elAscSong = document.querySelector('#card-asc-deg .asc-title');
-            if (elAscSong && elAscSong.textContent !== ascSongName.toUpperCase()) {
-                elAscSong.textContent = ascSongName.toUpperCase();
-            }
-            const elAscDecanCard = document.getElementById('card-asc-deg');
-            if (elAscDecanCard) {
-                // Check if background needs update (optimization: compare current URL)
-                const newBgParams = `url('assets/decan_${getDecanNumber(ascAngle)}.png')`;
-                if (elAscDecanCard.style.backgroundImage.indexOf(`decan_${getDecanNumber(ascAngle)}.png`) === -1) {
-                    elAscDecanCard.style.backgroundImage = newBgParams;
+        document.querySelectorAll('.ephemeris-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const alreadySelected = btn.dataset.planet === selectedPlanet;
+                document.querySelectorAll('.ephemeris-btn').forEach((b) => b.classList.remove('active'));
+                if (alreadySelected) {
+                    selectedPlanet = null;
+                } else {
+                    btn.classList.add('active');
+                    selectedPlanet = btn.dataset.planet;
                 }
-            }
-
-            const elMomentBar = document.getElementById('bar-asc-moment'); if (elMomentBar) elMomentBar.innerHTML = getMomentProgress(ascAngle);
-            const elBarAsc = document.getElementById('bar-asc-hour'); if (elBarAsc) elBarAsc.innerHTML = getSignProgress(ascZ.degree);
-            updateElement('val-asc-min', `${String(ascZ.degree).padStart(2, '0')}`); updateElement('val-asc-sec', `${String(ascZ.sec).padStart(2, '0')}`);
-            PLANET_IDS.forEach(id => {
-                let lon = (id === 'Sun') ? sunLon : (id === 'Moon' ? Astro.norm(PLANET_DATA.Moon.L[0] + PLANET_DATA.Moon.L[1] * T + 6.29 * Math.sin((134.96 + 477198.86 * T) * Astro.RAD)) : calculateGeocentric(id, T, earth));
-                updatePlanet(id, getZodiacSign(lon).degree);
+                renderEphemeris();
             });
-            document.getElementById('footer').textContent = `Running Internal Engine • ${now.toLocaleTimeString()}`;
+        });
+
+        function updateClockHands() {
+            const now = new Date();
+            const jd = Astro.getJD(now);
+            const T = Astro.getT(jd);
+
+            const sunLon = Astro.norm(PLANET_DATA.Sun.L[0] + PLANET_DATA.Sun.L[1] * T);
+            const earth = { r: 1.0, lon: Astro.norm(sunLon + 180) };
+            const moonLon = Astro.norm(PLANET_DATA.Moon.L[0] + PLANET_DATA.Moon.L[1] * T + 6.29 * Math.sin((134.96 + 477198.86 * T) * Astro.RAD));
+            const mercuryLon = calculateGeocentric('Mercury', T, earth);
+            const venusLon = calculateGeocentric('Venus', T, earth);
+            const marsLon = calculateGeocentric('Mars', T, earth);
+            const jupiterLon = calculateGeocentric('Jupiter', T, earth);
+            const saturnLon = calculateGeocentric('Saturn', T, earth);
+            const ascLon = calculateAscendant(jd, T);
+
+            placeItemOnRing('billy-sun', sunLon, 480);
+            placeItemOnRing('madonna-moon', moonLon, 480);
+            placeItemOnRing('michell-mercury', mercuryLon, 480);
+            placeItemOnRing('sadie-venus', venusLon, 480);
+            placeItemOnRing('pepper-mars', marsLon, 480);
+            placeItemOnRing('merigold-jupiter', jupiterLon, 480);
+            placeItemOnRing('mckenzie-saturn', saturnLon, 480);
+            placeItemOnRing('ascendant', ascLon, 310);
+
+            lastPlanetLongitudes = {
+                sun: sunLon, moon: moonLon, mercury: mercuryLon,
+                venus: venusLon, mars: marsLon, jupiter: jupiterLon, saturn: saturnLon
+            };
+            renderEphemeris();
+
+            // Update Minutes and Seconds
+            const ascendantMS = getMinuteSecond(ascLon);
+            document.getElementById('ui-min').textContent = String(ascendantMS.minute).padStart(2, '0');
+            document.getElementById('ui-sec').textContent = String(ascendantMS.second).padStart(2, '0');
+
+            // Draw Energy Bars
+            document.getElementById('bar-song').innerHTML = getDecanProgress(ascendantMS.minute);
+            document.getElementById('bar-album').innerHTML = getSignProgress(ascendantMS.minute);
+            document.getElementById('bar-movie').innerHTML = getMomentProgress(ascLon);
+
+            // NOW PLAYING: song picked from the ascendant's sign + decan-within-sign
+            const sign = getZodiacSign(ascLon);
+            const decanInSign = Math.floor(ascendantMS.minute / 10);
+            const songName = (ZODIAC_TRACKS[sign] || [])[decanInSign] || 'Unknown Song';
+            document.getElementById('ui-song').textContent = songName;
+            document.getElementById('art-song').style.backgroundImage = `url('assets/decan_${getDecanNumber(ascLon)}.png')`;
+
+            // HOUR: album cover tied to the ascendant's zodiac sign
+            document.getElementById('ui-album').textContent = ALBUM_NAMES[sign] || sign;
+            document.getElementById('art-album').style.backgroundImage = `url('${BACKGROUNDS[sign]}')`;
+
+            // 5 MOMENTS OF THE DAY: current moment of the day
+            const moment = getCurrentMoment(ascLon);
+            document.getElementById('ui-movie').textContent = moment;
+            document.getElementById('art-movie').style.backgroundImage = `url('${MOMENT_IMAGES[moment]}')`;
         }
 
-        function createStars() {
-            const container = document.getElementById('stars');
-            for (let i = 0; i < 50; i++) {
-                const s = document.createElement('div'); s.className = 'star';
-                s.style.width = (Math.random() * 2 + 1) + 'px'; s.style.height = s.style.width;
-                s.style.top = Math.random() * 100 + '%'; s.style.left = Math.random() * 100 + '%';
-                s.style.animationDelay = Math.random() * 3 + 's'; container.appendChild(s);
-            }
-        }
-
-        createStars(); calculatePositions(); setInterval(calculatePositions, 1000);
-
-        // ============================================================================
-        // SECTION 5: COMPONENT COMBINATION MANUAL (Card Assembly Guide)
-        // ============================================================================
-        /**
-         * 1. ASCENDANT ROW: Generated by `renderAscendantRow()`. Pulls from `getCurrentMoment`, `MOMENT_IMAGES`, `SIGN_ICONS`.
-         * 2. PLANET ROWS: Generated by `createPlanetRow()`. Combines `PLANET_DATA`, `CHARACTERS`, `BACKGROUNDS`.
-         * 3. LOGIC: `calculatePositions()` drives all real-time updates for degrees, moments, and energy bars.
-         */
+        updateClockHands();
+        setInterval(updateClockHands, 1000); 
     </script>
 </body>
-
 </html>
